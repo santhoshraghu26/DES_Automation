@@ -64,8 +64,7 @@ def automated_task():
 
     # Email setup
     sender_email = "soruganty@truelightenergy.com"
-    sender_password = "Santhosh26@"  # Replace with secure app password
-    recipient_email = "blarcher@truelightenergy.com"
+    sender_password = os.environ["EMAIL_PASSWORD"]
 
     send_email(
         sender=sender_email,
