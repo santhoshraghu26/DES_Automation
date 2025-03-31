@@ -5,6 +5,9 @@ import ssl
 import os
 from email.message import EmailMessage
 from datetime import datetime
+from zoneinfo import ZoneInfo
+
+
 
 # === LOGIN ===
 def login(email="amit@davidenergy.com", password="pOcGbd2dtEA5BOlG8BM4a"):
@@ -74,7 +77,8 @@ def automated_task():
         "arohan@truelightenergy.com",
         "mconstantine@truelightenergy.com"
     ],
-        subject=f"NYISO Energy & Nonenergy Data - {datetime.now().strftime('%Y-%m-%d %H:%M')}",
+        eastern_time = datetime.now(ZoneInfo("America/New_York"))
+        subject=f"NYISO Energy & Nonenergy Data - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}",
         body="Hi Team,\n\nPlease find attached the latest NYISO energy and nonenergy data files.\n\nBest,\nSanthosh",
         attachments=[file1, file2]
     )
