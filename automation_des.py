@@ -69,20 +69,24 @@ def automated_task():
     sender_email = "soruganty@truelightenergy.com"
     sender_password = os.environ["EMAIL_PASSWORD"]
 
+    # Get current Eastern Time
+    eastern_time = datetime.now(ZoneInfo("America/New_York"))
+
+    # Email subject
+    subject = f"NYISO Energy & Nonenergy Data - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
+
     send_email(
         sender=sender_email,
         password=sender_password,
         recipients=[
-        "blarcher@truelightenergy.com",
-        "arohan@truelightenergy.com",
-        "mconstantine@truelightenergy.com"
-    ],
-        eastern_time = datetime.now(ZoneInfo("America/New_York"))
-        subject=f"NYISO Energy & Nonenergy Data - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}",
+            "blarcher@truelightenergy.com",
+            "arohan@truelightenergy.com",
+            "mconstantine@truelightenergy.com"
+        ],
+        subject=subject,
         body="Hi Team,\n\nPlease find attached the latest NYISO energy and nonenergy data files.\n\nBest,\nSanthosh",
         attachments=[file1, file2]
     )
-
 # Run now
 if __name__ == "__main__":
     automated_task()
