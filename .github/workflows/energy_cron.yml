@@ -1,9 +1,9 @@
-name: Run Energy Automation Every 8 Hours (EST)
+name: Run Energy Automation Every 8 Hours (ET)
 
 on:
   schedule:
-    - cron: '0 5,13,21 * * *'  # Runs at 12 AM, 8 AM, and 4 PM EST
-  workflow_dispatch:  # Allows manual run from GitHub UI
+    - cron: '0 5,13,21 * * *'  # 1 AM, 9 AM, 5 PM EDT (UTC-4)
+  workflow_dispatch:  # Manual trigger via GitHub UI
 
 jobs:
   run-script:
