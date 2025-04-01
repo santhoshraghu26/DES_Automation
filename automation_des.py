@@ -105,8 +105,8 @@ def automated_task():
         "soruganty@truelightenergy.com"
     ]
     eastern_time = datetime.now(ZoneInfo("America/New_York"))
-    subject = f"Full Curve Data Report - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
-    body = "Hi Team,\n\nPlease find attached all energy, nonenergy, and rec curve data files for each ISO.\n\nBest,\nSanthosh"
+    subject = f"DES API Report - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
+    body = "Hi Team,\n\nPlease find attached DES API Report for energy, nonenergy, and rec curve data files for each ISO.\n\nBest,\nSantosh Oruganty"
 
     send_email(sender_email, sender_password, recipients, subject, body, attachments)
 
