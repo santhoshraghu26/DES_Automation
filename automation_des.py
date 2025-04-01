@@ -1,13 +1,13 @@
+# Re-running the full code after state reset to ensure all functions are redefined properly.
+
+import os
 import csv
 import requests
 import smtplib
 import ssl
-import os
 from email.message import EmailMessage
 from datetime import datetime
 from zoneinfo import ZoneInfo
-
-
 
 # === LOGIN ===
 def login(email="amit@davidenergy.com", password="pOcGbd2dtEA5BOlG8BM4a"):
@@ -17,27 +17,25 @@ def login(email="amit@davidenergy.com", password="pOcGbd2dtEA5BOlG8BM4a"):
     return eval(response.text)["access_token"]
 
 # === DOWNLOAD DATA ===
-def get_data(access_token, curve, iso, strip, file_suffix):
+def get_data(access_token, start_date, end_date, curve, iso, strip, history, file_suffix):
     url = "https://truepriceenergy.com:8080/get_data"
     querystring = {
-        "start": "2025-04-01",
-        "end": "2030-04-01",
-        "operating_day": "",
+        "start": start_date,
+        "end": end_date,
         "curve_type": curve,
         "iso": iso,
         "strip": strip,
-        "history": False,
+        "history": history,
         "type": "csv"
     }
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, params=querystring, headers=headers, verify=False)
-
     filename = f"{curve}_{iso}_{file_suffix}.csv"
     with open(filename, "wb") as file:
         file.write(response.content)
     return filename
 
-# === SEND EMAIL with both attachments ===
+# === SEND EMAIL ===
 def send_email(sender, password, recipients, subject, body, attachments):
     msg = EmailMessage()
     msg["From"] = sender
@@ -56,38 +54,61 @@ def send_email(sender, password, recipients, subject, body, attachments):
         smtp.login(sender, password)
         smtp.send_message(msg)
 
-# === MAIN AUTOMATION ===
+# === MAIN AUTOMATION TASK ===
 def automated_task():
     access_token = login()
-
-    # Download energy and nonenergy NYISO data
     timestamp = datetime.now().strftime('%Y%m%d_%H%M')
-    file1 = get_data(access_token, "energy", "nyiso", "7x8", f"energy_{timestamp}")
-    file2 = get_data(access_token, "nonenergy", "nyiso", "7x24", f"nonenergy_{timestamp}")
 
-    # Email setup
+    # Define all curve combinations
+    combinations = [
+        # Energy
+        ("energy", "ercot", ['7x8', '5x16', '2x16']),
+        ("energy", "isone", ['7x8', '5x16', '2x16']),
+        ("energy", "nyiso", ['7x8', '5x16', '2x16']),
+        ("energy", "miso", ['7x8', '5x16', '2x16']),
+        ("energy", "pjm", ['7x8', '5x16', '2x16']),
+        # Nonenergy
+        ("nonenergy", "pjm", ['7x24']),
+        ("nonenergy", "ercot", ['7x24']),
+        ("nonenergy", "nyiso", ['7x24']),
+        ("nonenergy", "isone", ['7x24']),
+        # REC
+        ("rec", "ercot", ['7x24']),
+        ("rec", "isone", ['7x24']),
+        ("rec", "nyiso", ['7x24']),
+        ("rec", "pjm", ['7x24']),
+    ]
+
+    attachments = []
+
+    for curve, iso, strip in combinations:
+        history = True if (curve == "rec" and iso == "isone") else False
+        filename = get_data(
+            access_token=access_token,
+            start_date="2000-01-01",
+            end_date="9999-12-31",
+            curve=curve,
+            iso=iso,
+            strip=strip,
+            history=history,
+            file_suffix=timestamp
+        )
+        attachments.append(filename)
+
+    # Email configuration
     sender_email = "soruganty@truelightenergy.com"
-    sender_password = os.environ["EMAIL_PASSWORD"]
-
-    # Get current Eastern Time
+    sender_password = os.environ.get("EMAIL_PASSWORD", "your_password_here")  # Replace or load from env
+    recipients = [
+        "blarcher@truelightenergy.com",
+        "arohan@truelightenergy.com",
+        "mconstantine@truelightenergy.com",
+        "soruganty@truelightenergy.com"
+    ]
     eastern_time = datetime.now(ZoneInfo("America/New_York"))
+    subject = f"Full Curve Data Report - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
+    body = "Hi Team,\n\nPlease find attached all energy, nonenergy, and rec curve data files for each ISO.\n\nBest,\nSanthosh"
 
-    # Email subject
-    subject = f"NYISO Energy & Nonenergy Data - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
+    send_email(sender_email, sender_password, recipients, subject, body, attachments)
 
-    send_email(
-        sender=sender_email,
-        password=sender_password,
-        recipients=[
-            "blarcher@truelightenergy.com",
-            "arohan@truelightenergy.com",
-            "mconstantine@truelightenergy.com",
-            "soruganty@truelightenergy.com"
-        ],
-        subject=subject,
-        body="Hi Team,\n\nPlease find attached the latest NYISO energy and nonenergy data files.\n\nBest,\nSanthosh",
-        attachments=[file1, file2]
-    )
-# Run now
-if __name__ == "__main__":
-    automated_task()
+# Run the task
+automated_task()
