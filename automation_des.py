@@ -81,7 +81,8 @@ def automated_task():
         recipients=[
             "blarcher@truelightenergy.com",
             "arohan@truelightenergy.com",
-            "mconstantine@truelightenergy.com"
+            "mconstantine@truelightenergy.com",
+            "soruganty@truelightenergy.com"
         ],
         subject=subject,
         body="Hi Team,\n\nPlease find attached the latest NYISO energy and nonenergy data files.\n\nBest,\nSanthosh",
