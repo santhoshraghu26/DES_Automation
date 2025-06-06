@@ -31,9 +31,11 @@ def get_data(access_token, start_date, end_date, curve, iso, strip, history, fil
     headers = {"Authorization": f"Bearer {access_token}"}
     response = requests.get(url, params=querystring, headers=headers, verify=False)
     filename = f"{curve}_{iso}_{file_suffix}.csv"
+
     with open(filename, "wb") as file:
         file.write(response.content)
-    return filename
+        
+    return filename, response.status_code
 
 # === SEND EMAIL ===
 def send_email(sender, password, recipients, subject, body, attachments):
@@ -80,6 +82,7 @@ def automated_task():
     ]
 
     attachments = []
+    status_logs = []
 
     for curve, iso, strip in combinations:
         history = True if (curve == "rec" and iso == "isone") else False
@@ -94,6 +97,10 @@ def automated_task():
             file_suffix=timestamp
         )
         attachments.append(filename)
+        if status == 200:
+            status_logs.append(f"Fetched {curve.upper()} - {iso.upper()} | Status: {status}")
+        else:
+            status_logs.append(f"[ERROR] Failed to fetch data for {curve.upper()} - {iso.upper()} (Status Code: {status})")
 
     # Email configuration
     sender_email = "soruganty@truelightenergy.com"
@@ -106,8 +113,14 @@ def automated_task():
     ]
     eastern_time = datetime.now(ZoneInfo("America/New_York"))
     subject = f"DES API Report - {eastern_time.strftime('%Y-%m-%d %I:%M %p %Z')}"
-    body = "Hi Team,\n\nPlease find attached DES API Report for energy, nonenergy, and rec curve data files for each ISO.\n\nBest,\nSantosh Oruganty"
-
+    body = (
+        "Hi Team,\n\n"
+        "Please find attached DES API Report for energy, nonenergy, and rec curve data files for each ISO.\n\n"
+        "Fetch Status Summary:\n" +
+        "\n".join(status_logs) +
+        "\n\nBest,\nSantosh Oruganty"
+    )
+    
     send_email(sender_email, sender_password, recipients, subject, body, attachments)
 
 # Run the task
