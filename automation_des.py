@@ -86,7 +86,7 @@ def automated_task():
 
     for curve, iso, strip in combinations:
         history = True if (curve == "rec" and iso == "isone") else False
-        filename = get_data(
+        filename, status = get_data(
             access_token=access_token,
             start_date="2000-01-01",
             end_date="9999-12-31",
