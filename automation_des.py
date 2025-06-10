@@ -104,7 +104,8 @@ def automated_task():
 
     # Email configuration
     sender_email = "soruganty@truelightenergy.com"
-    sender_password = os.environ.get("EMAIL_PASSWORD", "your_password_here")  # Replace or load from env
+    sender_password = os.environ["EMAIL_PASSWORD"]
+    #sender_password = os.environ.get("EMAIL_PASSWORD", "your_password_here")  # Replace or load from env
     recipients = [
         "blarcher@truelightenergy.com",
         "arohan@truelightenergy.com",
